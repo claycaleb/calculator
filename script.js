@@ -11,7 +11,9 @@ function multiply(a, b) {
 };
 
 function divide(a, b) {
-    return a / b;
+    return b === 0 
+        ? "To infinity...and beyond!" 
+        : a / b;
 };
 
 function operate(first, last, operator) {
@@ -21,7 +23,7 @@ function operate(first, last, operator) {
         case "×":
             return multiply(first, last);
         case "-":
-            return subtract(first, last);
+            return add(first, last);
         case "+":
             return add(first, last);
     };
@@ -30,32 +32,62 @@ function operate(first, last, operator) {
 
 const display = document.querySelector("#display");
 
-display.textContent.split(/\D/);
+const re = /(?<!-)[÷×\-+]/;
+const numRe = /-?\d+/;
 
 function getExpression() {
-    const re = /[^\d.]/;
-    const operands = display.textContent.split(re);
-    const operator = display.textContent.match(re);
-    return { first: +operands[0], last: +operands[1], operator: operator[0] }
+    const operands = [...display.textContent.matchAll(/-?\d+/g)];
+    const operator = display.textContent.charAt(0) == "-"
+        ? display.textContent.slice(1).match(/[÷×\-+]/)
+        : display.textContent.match(/[÷×\-+]/); // -18-6 = -12 bc of matchAll regex... needs fixed Or just add?
+    return { first: +operands[0][0], last: +operands[1][0], operator: operator[0] }
 }
 
-const buttons = document.querySelectorAll("#calculator button");
+const digitButtons = document.querySelectorAll(".digit");
+const pointButton = document.querySelector("#point");
+const operateButton = document.querySelector("#operate");
+const operatorButtons = document.querySelectorAll("#operators button");
+const clearButton = document.querySelector("#clear");
+const backspaceButton = document.querySelector("#backspace");
 
-buttons.forEach(button => {
+digitButtons.forEach(button => {
     button.addEventListener("click", () => {
-        switch (button.id) {
-            case "clear":
-                display.textContent = "";
-            case "backspace":
-                display.textContent = display.textContent.slice(0, -1);
-                break;
-            case "operate":
-                const { first, last, operator } = getExpression();
-                result = operate(first, last, operator);
-                display.textContent = result;
-                break
-            default:
-                display.textContent += button.innerText;
+        display.textContent += button.innerText;
+    });
+});
+
+pointButton.addEventListener("click", () => {      
+    if (!display.textContent.slice(-1) === ".") {
+        display.textContent += pointButton.innerText;
+    }
+});
+
+operateButton.addEventListener("click", () => {
+    const { first, last, operator } = getExpression();
+    result = operate(first, last, operator);
+    display.textContent = result;
+});
+
+// && !display.textContent.slice(0) === "-"
+
+operatorButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        if (re.test(display.textContent) && !display.textContent.charAt(0) == "-") {
+            display.textContent = display.textContent.replace(re, button.innerText);
+        } else {
+            display.textContent += button.innerText;
         }
     });
 });
+
+clearButton.addEventListener("click", () => {
+    display.textContent = "";
+});
+
+backspaceButton.addEventListener("click", () => {
+    display.textContent = display.textContent.slice(0, -1);
+});
+
+// need to add logic so only one exp at a time
+// no more operators, operators in a row, etc
+// add picture in picture mode
