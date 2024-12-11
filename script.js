@@ -56,9 +56,9 @@ digitButtons.forEach(button => {
     });
 });
 
-pointButton.addEventListener("click", () => {      
-    if (!display.textContent.slice(-1) === ".") {
-        display.textContent += pointButton.innerText;
+pointButton.addEventListener("click", () => {
+    if (display.textContent.slice(-1) !== ".") {
+        display.textContent += ".";
     }
 });
 
